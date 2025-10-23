@@ -12,6 +12,13 @@ const firebaseConfig = {
 
 // --- Initialize Firebase ---
 firebase.initializeApp(firebaseConfig);
+// --- ADD THESE 4 LINES TO INITIALIZE APP CHECK ---
+const appCheck = firebase.appCheck();
+appCheck.activate(
+  '6Le1vfQrAAAAANVwmrPN8Ts4uAK7OdInWPS_cU_2', 
+  true 
+);
+// -----------------------------------------------
 const auth = firebase.auth();
 const db = firebase.firestore();
 
