@@ -112,6 +112,25 @@ app.get("/api/questions", (req, res) => {
 });
 console.log("[Server Setup] Defined GET /api/questions");
 
+// Leaderboard (Top 10) — requires auth
+app.get("/api/leaderboard", verifyToken, async (req, res) => {
+  try {
+    const snap = await db.collection("users").orderBy("score", "desc").limit(10).get();
+    const items = [];
+    snap.forEach((doc) => {
+      const u = doc.data() || {};
+      items.push({
+        username: u.username || (u.email ? String(u.email).split("@")[0] : "Player"),
+        score: typeof u.score === "number" ? u.score : 0,
+      });
+    });
+    res.json(items);
+  } catch (e) {
+    console.error("[Server GET /api/leaderboard] Error:", e);
+    res.status(500).json({ error: "Failed to load leaderboard" });
+  }
+});
+
 // Submit answer
 app.post("/api/submit", verifyToken, async (req, res) => {
   const { questionId, guess } = req.body;

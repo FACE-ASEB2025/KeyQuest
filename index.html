@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KeyQuest</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- ✅ Firebase Compat SDK (v9.6.10, matches your setup) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+  <!-- Animated background -->
+  <div class="glow left"></div>
+  <div class="glow right"></div>
+  <div class="binary"></div>
+
+  <!-- ================= Game Container ================= -->
+  <div class="container hidden" id="game-container">
+    <header class="header">
+      <h1>KeyQuest</h1>
+      <div class="game-info">
+        <span id="user-info">Welcome!</span>
+        <button id="logout-btn" class="btn btn-secondary" style="padding:5px 10px; font-size:0.8rem; margin-left:10px;">Logout</button>
+        <span class="score-display">
+          Score: <span id="current-score">0</span>
+        </span>
+        <button id="view-leaderboard-game-btn" class="btn btn-secondary" style="padding:10px 16px; border-radius:12px;">Leaderboard</button>
+      </div>
+    </header>
+
+    <main class="jeopardy-container">
+      <div class="jeopardy-grid" id="jeopardy-grid">
+        <div class="jeopardy-column">
+          <div class="category-header" id="cat-header-0">Loading...</div>
+        </div>
+        <div class="jeopardy-column">
+          <div class="category-header" id="cat-header-1">Loading...</div>
+        </div>
+        <div class="jeopardy-column">
+          <div class="category-header" id="cat-header-2">Loading...</div>
+        </div>
+      </div>
+
+      <div class="submit-section" style="text-align:center; margin-top:30px;">
+        <button class="btn btn-primary" id="submit-game" style="display:none;">Submit Game</button>
+      </div>
+    </main>
+
+    <!-- Question Modal -->
+    <div class="question-modal" id="question-modal" style="display:none;">
+      <div class="modal-content">
+        <div class="question-header">
+          <h3 id="question-category">Category</h3>
+          <h3 id="question-points">Points</h3>
+        </div>
+        <div class="question-section">
+          <h2 class="question-text" id="question-text">Loading question...</h2>
+          <div id="modal-asset-container" style="margin-top:14px; text-align:center; display:none;"></div>
+        </div>
+        <div id="question-input-container" style="margin-top:20px; display:none;">
+          <input type="text" id="answer-input" placeholder="Enter your answer..."
+            style="width:100%; padding:10px; font-size:16px; border:2px solid #ddd; border-radius:5px; color:#000;" />
+          <button id="submit-answer-btn"
+            style="margin-top:10px; padding:10px 20px; background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer; font-size:16px;">
+            Submit Answer
+          </button>
+          <p id="answer-feedback" style="margin-top:10px; font-weight:bold;"></p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="close-modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div class="question-modal" id="leaderboard-modal" style="display:none; z-index:2001;">
+      <div class="modal-content">
+        <div class="question-header">
+          <h3 style="color:#00ff88;">Leaderboard (Top 10)</h3>
+        </div>
+        <div id="leaderboard-modal-list" style="max-height:400px; overflow-y:auto; margin-top:15px;"></div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="close-leaderboard-modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="question-modal" id="auth-modal" style="display:flex; z-index:2000;">
+      <div class="modal-content">
+        <div class="question-header">
+          <h3 id="auth-title">Login / Register</h3>
+        </div>
+        <div style="margin-top:20px; text-align:center;">
+          <input type="email" id="email-input" placeholder="Enter your email..." required
+            style="width:100%; padding:10px; font-size:16px; border:2px solid #ddd; border-radius:5px; color:#000; margin-bottom:10px;" />
+          <input type="text" id="username-input-auth" placeholder="Enter a username..." required
+            style="width:100%; padding:10px; font-size:16px; border:2px solid #ddd; border-radius:5px; color:#000; margin-bottom:10px;" />
+          <input type="password" id="password-input" placeholder="Enter password..." required
+            style="width:100%; padding:10px; font-size:16px; border:2px solid #ddd; border-radius:5px; color:#000; margin-bottom:15px;" />
+          <button id="login-btn" class="btn btn-primary" style="padding:10px 20px; font-size:16px;">Login</button>
+          <button id="register-btn" class="btn btn-secondary" style="padding:10px 20px; font-size:16px;">Register</button>
+          <p id="auth-error" style="color:#f44336; margin-top:15px;"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Client Script -->
+  <script src="client.js"></script>
+</body>
+</html>
