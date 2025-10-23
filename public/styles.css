@@ -114,12 +114,13 @@ body {
 
 .game-info {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   font-weight: 600;
   color: #a0aec0;
   gap: 12px;
 }
+
 .header .score-display {
   display: inline-flex;
   align-items: center;
@@ -131,6 +132,7 @@ body {
   font-weight: 600;
   min-height: 40px;
   line-height: 1;
+  margin-left: auto;
 }
 
 .question-counter {

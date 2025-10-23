@@ -48,6 +48,14 @@ let currentQuestionId = null;
 let allQuestionsData = {};
 let userProfile = { solved: [], score: 0 };
 
+function updateHeaderName() {
+  const fromProfile = userProfile && userProfile.username ? userProfile.username : "";
+  const fromDisplay = currentUser && currentUser.displayName ? currentUser.displayName : "";
+  const fromEmail = currentUser && currentUser.email ? currentUser.email.split("@")[0] : "";
+  const name = fromProfile || fromDisplay || fromEmail;
+  if (name) userInfoEl.textContent = `Team: ${name}`;
+}
+
 async function loadUserProfile() {
   if (!currentUser) return;
   try {
@@ -58,11 +66,12 @@ async function loadUserProfile() {
       userProfile = { solved: [], score: 0 };
     }
     currentScoreEl.textContent = userProfile.score || 0;
-    if (userProfile.username) {
-      userInfoEl.textContent = userProfile.username;
-    }
+    updateHeaderName();
     applySolvedUI();
-  } catch (_) {}
+  } catch (_) {
+    const fallback = currentUser && currentUser.email ? currentUser.email.split("@")[0] : "";
+    if (fallback) userInfoEl.textContent = `Team: ${fallback}`;
+  }
 }
 
 function applySolvedUI() {
@@ -79,6 +88,7 @@ async function fetchQuestions() {
     const res = await fetch("/api/questions");
     allQuestionsData = await res.json();
     buildGameBoard(allQuestionsData);
+    updateHeaderName();
   } catch (err) {
     console.error("Failed to load questions:", err);
   }
@@ -181,6 +191,10 @@ async function handleRegister() {
   const username = usernameInputAuth.value.trim();
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, password);
+    if (username) {
+      try { await cred.user.updateProfile({ displayName: username }); } catch (_) {}
+      userInfoEl.textContent = `Team: ${username}`;
+    }
     await db.collection("users").doc(cred.user.uid).set({
       username,
       email,
@@ -194,7 +208,10 @@ async function handleRegister() {
 
 async function handleLogin() {
   try {
-    await auth.signInWithEmailAndPassword(emailInput.value.trim(), passwordInput.value.trim());
+    const email = emailInput.value.trim();
+    await auth.signInWithEmailAndPassword(email, passwordInput.value.trim());
+    const name = email ? email.split("@")[0] : "";
+    if (name) userInfoEl.textContent = `Team: ${name}`;
   } catch (err) {
     authErrorEl.textContent = err.message;
   }
@@ -235,6 +252,8 @@ auth.onAuthStateChanged(async (user) => {
     currentUser = user;
     authModal.style.display = "none";
     gameContainer.classList.remove("hidden");
+    const defaultName = user.displayName || (user.email ? user.email.split("@")[0] : "");
+    if (defaultName) userInfoEl.textContent = `Team: ${defaultName}`;
     await fetchQuestions();
     await loadUserProfile();
   } else {
