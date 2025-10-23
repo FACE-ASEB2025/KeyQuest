@@ -120,38 +120,90 @@ app.post("/api/submit", verifyToken, async (req, res) => {
   const q = allQuestions[questionId];
   if (!q) return res.status(400).json({ correct: false, message: "Invalid question ID" });
 
-  if (guess.toLowerCase() === q.answer.toLowerCase()) {
-    const userRef = db.collection("users").doc(userId);
-    let userDoc = await userRef.get();
-
-    // Auto-create profile if missing
-    if (!userDoc.exists) {
-      console.warn(`[Server] Auto-creating profile for ${userId}`);
-      await userRef.set({
-        username: req.user.email.split("@")[0],
-        email: req.user.email,
-        score: 0,
-        solved: [],
-      });
-      userDoc = await userRef.get();
-    }
-
-    const user = userDoc.data();
-    const solved = user.solved || [];
-    const already = solved.includes(questionId);
-    const newScore = already ? user.score : (user.score || 0) + q.points;
-
-    if (!already) {
-      await userRef.update({ score: newScore, solved: [...solved, questionId] });
-    }
-
-    return res.json({
-      correct: true,
-      message: already ? "Correct! (Already solved)" : `Correct! +${q.points} pts!`,
-      newScore,
-    });
-  } else {
+  const isCorrect = typeof guess === "string" && guess.toLowerCase() === q.answer.toLowerCase();
+  if (!isCorrect) {
     return res.json({ correct: false, message: "Incorrect." });
+  }
+
+  try {
+    const userRef = db.collection("users").doc(userId);
+    const statsRef = db.collection("questionStats").doc(questionId);
+
+    const result = await db.runTransaction(async (tx) => {
+      const userSnap = await tx.get(userRef);
+      const statsSnap = await tx.get(statsRef);
+
+      // Ensure user exists (merge to avoid overwriting)
+      const baseUser = userSnap.exists
+        ? userSnap.data()
+        : {
+            username: (req.user.email && req.user.email.split("@")[0]) || userId,
+            email: req.user.email || "",
+            score: 0,
+            solved: [],
+          };
+
+      const solved = Array.isArray(baseUser.solved) ? baseUser.solved : [];
+      const already = solved.includes(questionId);
+      if (already) {
+        return { already: true, newScore: baseUser.score || 0, awarded: 0 };
+      }
+
+      // Compute dynamic award for stego only
+      const basePoints = q.points;
+      let awarded = basePoints;
+      if (questionId.startsWith("stego")) {
+        const solvesCount = statsSnap.exists && typeof statsSnap.data().solvesCount === "number" ? statsSnap.data().solvesCount : 0;
+        const dec = ["stego100", "stego200", "stego300"].includes(questionId) ? 5 : 10;
+        const extraSolves = Math.max(0, solvesCount - 2); // after first 3 solves (4th solver sees 1x decrement)
+        awarded = Math.max(0, basePoints - dec * extraSolves);
+      }
+
+      const newScore = (baseUser.score || 0) + awarded;
+
+      // Persist user and question stats
+      tx.set(userRef, baseUser, { merge: true });
+      tx.set(
+        userRef,
+        {
+          score: newScore,
+          solved: [...solved, questionId],
+        },
+        { merge: true }
+      );
+      const prevSolves = statsSnap.exists && typeof statsSnap.data().solvesCount === "number" ? statsSnap.data().solvesCount : 0;
+      tx.set(statsRef, { solvesCount: prevSolves + 1 }, { merge: true });
+
+      return { already: false, newScore, awarded };
+    });
+
+    if (result.already) {
+      return res.json({ correct: true, message: "Correct! (Already solved)", newScore: result.newScore });
+    } else {
+      return res.json({ correct: true, message: `Correct! +${result.awarded} pts!`, newScore: result.newScore });
+    }
+  } catch (e) {
+    console.error("[/api/submit] Transaction error:", e);
+    return res.status(500).json({ correct: false, message: "Server error while scoring." });
+  }
+});
+
+app.get("/download/*", (req, res) => {
+  try {
+    const publicDir = path.resolve(__dirname, "public");
+    const requestedPath = req.params[0] || "";
+    const filePath = path.resolve(publicDir, requestedPath);
+    const rel = path.relative(publicDir, filePath);
+    if (rel.startsWith("..") || path.isAbsolute(rel)) {
+      return res.status(400).send("Invalid path");
+    }
+    res.download(filePath, path.basename(filePath), (err) => {
+      if (err) {
+        if (!res.headersSent) res.status(404).send("File not found");
+      }
+    });
+  } catch (e) {
+    res.status(500).send("Server error");
   }
 });
 

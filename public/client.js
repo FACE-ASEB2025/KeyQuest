@@ -48,6 +48,31 @@ let currentQuestionId = null;
 let allQuestionsData = {};
 let userProfile = { solved: [], score: 0 };
 
+async function loadUserProfile() {
+  if (!currentUser) return;
+  try {
+    const doc = await db.collection("users").doc(currentUser.uid).get();
+    if (doc.exists) {
+      userProfile = doc.data();
+    } else {
+      userProfile = { solved: [], score: 0 };
+    }
+    currentScoreEl.textContent = userProfile.score || 0;
+    if (userProfile.username) {
+      userInfoEl.textContent = userProfile.username;
+    }
+    applySolvedUI();
+  } catch (_) {}
+}
+
+function applySolvedUI() {
+  const solved = (userProfile && userProfile.solved) ? userProfile.solved : [];
+  solved.forEach((qid) => {
+    const box = document.querySelector(`.point-box[data-question-id='${qid}']`);
+    if (box) box.classList.add("used");
+  });
+}
+
 // --- Fetch Questions from Server ---
 async function fetchQuestions() {
   try {
@@ -102,9 +127,17 @@ function showQuestionModal(questionId) {
   questionTextEl.textContent = q.question;
   questionCategoryEl.textContent = questionId.replace(/[0-9]/g, "");
   questionPointsEl.textContent = q.points + " Points";
-  modalAssetContainer.innerHTML = q.image
-    ? `<img src="${q.image}" style="max-width:100%; border-radius:10px; margin-top:10px;">`
-    : "";
+  const fileName = q.image ? q.image.split("/").pop() : "";
+  let assetHtml = "";
+  if (q.image) {
+    assetHtml += `<img src="${q.image}" style="max-width:100%; border-radius:10px; margin-top:10px;">`;
+    assetHtml += `<div style=\"margin-top:10px;\"><a href=\"/download/${q.image}\" download=\"${fileName}\" class=\"btn btn-secondary\">Download image</a></div>`;
+  }
+  if (q.link) {
+    assetHtml += `<div style=\"margin-top:12px;\"><a href=\"${q.link}\" target=\"_blank\" rel=\"noopener\" class=\"btn btn-primary\">Open challenge</a></div>`;
+  }
+  modalAssetContainer.innerHTML = assetHtml;
+  modalAssetContainer.style.display = (q.image || q.link) ? "block" : "none";
   questionInputContainer.style.display = "block";
   questionModal.style.display = "flex";
 }
@@ -133,8 +166,11 @@ async function submitAnswer() {
   answerFeedbackEl.style.color = result.correct ? "#00ff88" : "#f44336";
   if (result.correct) {
     currentScoreEl.textContent = result.newScore;
+    userProfile.score = result.newScore;
     const box = document.querySelector(`.point-box[data-question-id='${currentQuestionId}']`);
     if (box) box.classList.add("used");
+    if (!userProfile.solved) userProfile.solved = [];
+    if (!userProfile.solved.includes(currentQuestionId)) userProfile.solved.push(currentQuestionId);
   }
 }
 
@@ -199,10 +235,14 @@ auth.onAuthStateChanged(async (user) => {
     currentUser = user;
     authModal.style.display = "none";
     gameContainer.classList.remove("hidden");
-    fetchQuestions();
+    await fetchQuestions();
+    await loadUserProfile();
   } else {
     currentUser = null;
     authModal.style.display = "flex";
     gameContainer.classList.add("hidden");
+    userProfile = { solved: [], score: 0 };
+    currentScoreEl.textContent = 0;
+    userInfoEl.textContent = "Welcome!";
   }
 });

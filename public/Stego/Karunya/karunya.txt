@@ -1,0 +1,91 @@
+Q1 - https://68f352a753e83c14d8f81996--regal-beignet-28f0c8.netlify.app/
+
+Q2 - https://68f3de95a6f75258f31aaa90--regal-beignet-28f0c8.netlify.app/
+
+                                            ***** Solution for all 3 Qns *****
+   
+Binary Image Stego-
+ans.) FLAG{easy}
+The ascii value of F is 102 and binary value is 01100110. (the same for all the other characters)
+The white block represents 0 and Black block represents 1 so each row represents a character form the answer.
+
+CTF Challenge — Octagon Hunt
+ans.) FLAG{hex_hunt_master}
+We find 'RkxBR3toZXhfaHVudF9tYXN0ZXJ9' if we go to view source from the website which is Base64 encoded.
+Then we find the formula [const specialCell = (Math.pow(7, 3) + Math.pow(5, 2)) % totalCells;] from the source then after that if we calculate, we get 369, then we click on that 369 box, then we will get a pop up to enter the flag.
+
+
+Q1.) The image has a hidden text which is protected by a password and we get the password from the text file.
+
+step1: we use the below code to decode the text file and we get 'flag{FACE_CTF_2025}' (this is the password to decode the image)
+
+# decode_xor.py
+import base64
+import sys
+from pathlib import Path
+
+INPUT_FILE = "encoded_flag.b64"
+KEY = b"CTF2025"
+
+def load_b64(path: Path) -> bytes:
+    if not path.exists():
+        print(f"Error: {path} not found.")
+        sys.exit(1)
+    data = path.read_bytes().strip()
+    try:
+        return base64.b64decode(data)
+    except Exception as e:
+        print("Error: input is not valid Base64:", e)
+        sys.exit(1)
+
+def repeating_xor(data: bytes, key: bytes) -> bytes:
+    return bytes([b ^ key[i % len(key)] for i, b in enumerate(data)])
+
+def main():
+    cipher = load_b64(Path(INPUT_FILE))
+    plain = repeating_xor(cipher, KEY)
+    try:
+        print("Recovered plaintext:", plain.decode())
+    except UnicodeDecodeError:
+        print("Recovered bytes (non-decodable as UTF-8):", plain)
+
+if __name__ == "__main__":
+    main()
+
+
+Step2:we use the below code to decode the image so we get 'flag{have_fun}'
+
+from stegano import lsb
+from cryptography.fernet import Fernet
+import base64
+import hashlib
+
+# Function to recreate the encryption key from your password
+def generate_key(password):
+    # Generate a 32-byte key from the password
+    return base64.urlsafe_b64encode(hashlib.sha256(password.encode()).digest())
+
+# The encoded image file
+encoded_image = "encoded.png"   # Change this if your file name is different
+
+# Ask for password
+password = input("Enter password to decode: ")
+
+# Extract hidden encrypted message from the image
+hidden_data = lsb.reveal(encoded_image)
+
+if hidden_data is None:
+    print("❌ No hidden message found in this image!")
+else:
+    try:
+        # Recreate key and decrypt the message
+        key = generate_key(password)
+        cipher = Fernet(key)
+        decrypted_message = cipher.decrypt(hidden_data.encode()).decode()
+        
+        print("\n🔓 Hidden message revealed:")
+        print(decrypted_message)
+
+    except Exception as e:
+        print("\n❌ Incorrect password or corrupted image/data!")
+        print("Error details:", e)
