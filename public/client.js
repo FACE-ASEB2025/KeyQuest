@@ -225,12 +225,55 @@ async function handleLogout() {
 async function showLeaderboardModal() {
   leaderboardModal.style.display = "flex";
   leaderboardModalList.innerHTML = "Loading...";
-  const snapshot = await db.collection("users").orderBy("score", "desc").limit(10).get();
-  leaderboardModalList.innerHTML = "";
-  snapshot.forEach((doc) => {
-    const user = doc.data();
-    leaderboardModalList.innerHTML += `<div style="margin:8px 0;">${user.username}: <strong>${user.score}</strong></div>`;
-  });
+  try {
+    if (!currentUser) {
+      leaderboardModalList.innerHTML = "Please log in to view the leaderboard.";
+      return;
+    }
+    const idToken = await currentUser.getIdToken();
+
+    // Try server-side leaderboard first
+    try {
+      const res = await fetch("/api/leaderboard", {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      if (res.ok) {
+        const items = await res.json();
+        if (!items || !items.length) {
+          leaderboardModalList.innerHTML = "No players yet.";
+          return;
+        }
+        leaderboardModalList.innerHTML = "";
+        items.forEach((u) => {
+          const name = u.username || "Player";
+          const score = typeof u.score === "number" ? u.score : 0;
+          leaderboardModalList.innerHTML += `<div style="margin:8px 0;">${name}: <strong>${score}</strong></div>`;
+        });
+        return; // success
+      }
+      // fallthrough to client-side if non-200
+      throw new Error(`HTTP ${res.status}`);
+    } catch (serverErr) {
+      console.warn("[Leaderboard] Server fetch failed, falling back to client Firestore:", serverErr);
+      // Fallback: client Firestore (requires read rules)
+      const snapshot = await db.collection("users").orderBy("score", "desc").limit(10).get();
+      if (snapshot.empty) {
+        leaderboardModalList.innerHTML = "No players yet.";
+        return;
+      }
+      leaderboardModalList.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const u = doc.data() || {};
+        const name = u.username || (u.email ? u.email.split("@")[0] : "Player");
+        const score = typeof u.score === "number" ? u.score : 0;
+        leaderboardModalList.innerHTML += `<div style="margin:8px 0;">${name}: <strong>${score}</strong></div>`;
+      });
+    }
+  } catch (err) {
+    console.error("[Leaderboard] Failed to load:", err);
+    const msg = err && (err.code || err.message) ? (err.code || err.message) : "Unknown error";
+    leaderboardModalList.innerHTML = `Failed to load leaderboard: ${msg}`;
+  }
 }
 
 function closeLeaderboardModal() {
