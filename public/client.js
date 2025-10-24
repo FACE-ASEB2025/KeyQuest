@@ -1,4 +1,7 @@
 console.log("Client-side JavaScript loaded!");
+if (["localhost", "127.0.0.1", "::1"].includes(location.hostname)) {
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
 
 // --- Firebase Configuration ---
 const firebaseConfig = {
@@ -209,7 +212,10 @@ async function handleRegister() {
       solved: [],
     });
   } catch (err) {
-    authErrorEl.textContent = err.message;
+    const msg = (err && err.code && String(err.code).includes("app-check")) ?
+      "App Check token invalid. If running locally, hard refresh and ensure debug token is allowed in Firebase Console." :
+      err.message;
+    authErrorEl.textContent = msg;
   }
 }
 
@@ -220,7 +226,10 @@ async function handleLogin() {
     const name = email ? email.split("@")[0] : "";
     if (name) userInfoEl.textContent = `Team: ${name}`;
   } catch (err) {
-    authErrorEl.textContent = err.message;
+    const msg = (err && err.code && String(err.code).includes("app-check")) ?
+      "App Check token invalid. If running locally, hard refresh and ensure debug token is allowed in Firebase Console." :
+      err.message;
+    authErrorEl.textContent = msg;
   }
 }
 
