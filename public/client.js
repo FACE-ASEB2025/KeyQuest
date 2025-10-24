@@ -15,13 +15,19 @@ const firebaseConfig = {
 
 // --- Initialize Firebase ---
 firebase.initializeApp(firebaseConfig);
-// --- ADD THESE 4 LINES TO INITIALIZE APP CHECK ---
+
+// --- THE CORRECT ENTERPRISE APP CHECK CODE ---
 const appCheck = firebase.appCheck();
-appCheck.activate(
-  '6Le1vfQrAAAAANVwmrPN8Ts4uAK7OdInWPS_cU_2', 
-  true 
+
+// 1. Create the ENTERPRISE provider with your site key
+const provider = new firebase.appCheck.ReCaptchaEnterpriseProvider(
+  '6Le1vfQrAAAAANVwmrPN8Ts4uAK7OdInWPS_cU_2'
 );
+
+// 2. Activate App Check with that provider
+appCheck.activate(provider, true);
 // -----------------------------------------------
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
