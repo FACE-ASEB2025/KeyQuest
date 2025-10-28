@@ -26,6 +26,27 @@ const provider = new firebase.appCheck.ReCaptchaEnterpriseProvider(
 
 // 2. Activate App Check with that provider
 appCheck.activate(provider, true);
+
+// Add token change listener to monitor App Check status
+appCheck.onTokenChanged((token) => {
+  console.log('App Check token status:', !!token);
+});
+
+// Test function to verify App Check
+async function testAppCheck() {
+  try {
+    const token = await appCheck.getToken();
+    console.log('App Check verification:', !!token);
+    console.log('Token received successfully');
+    return true;
+  } catch (error) {
+    console.error('App Check error:', error);
+    return false;
+  }
+}
+
+// Make test function available globally
+window.testAppCheck = testAppCheck;
 // -----------------------------------------------
 
 const auth = firebase.auth();
