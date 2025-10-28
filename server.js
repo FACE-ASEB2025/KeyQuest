@@ -67,11 +67,51 @@ const allQuestions = {
   },
 
   // Cryptography
-  crypto100: { points: 100, question: "Decode Morse code: .- .-.. --. --- .-. .. - .... --", answer: "ALGORITHM" },
-  crypto200: { points: 200, question: "Agent message, keyword hint: 'door'. Decrypt: WERBMV", answer: "MATRIX" },
-  crypto300: { points: 300, question: "Caesar (3) then Rail Fence (2). Decrypt: HORELLOLW", answer: "HELLOWORLD" },
-  crypto400: { points: 400, question: "Shifted message G M F R W Q V H O R, shifts (-2)(+1)(-3)(0)(+2)(-1)(-2)(+1)(0)(-4). Find original.", answer: "ENCRYPTION" },
-  crypto500: { points: 500, question: "Masked word hint: 'science rooms'. Cipher: BEL STX ACK BEL FF SOH BS BS SOH.", answer: "SCHEMATIC" },
+  crypto100: { 
+    points: 100, 
+    question: "Hex Mystery. [EASY] Ciphertext: 426c61636b. Hint: Some numbers look different when read by machines.", 
+    answer: "BLACK" 
+  },
+  crypto150: { 
+    points: 150, 
+    question: "Binary Puzzle. [EASY] Ciphertext: 01000010 01001001 01001111. Hint: Strings of ones and zeros may hide secrets.", 
+    answer: "BIO" 
+  },
+  crypto200: { 
+    points: 200, 
+    question: "Shifted Alphanumeric (Simple). [EASY] Ciphertext: Dpef15. Hint: Letters and numbers march differently. (Shift 1 applied to letters and digits)", 
+    answer: "CODE04" 
+  },
+  crypto250: { 
+    points: 250, 
+    question: "XOR Secret. [MEDIUM] Ciphertext (hex): 6b 66 67 6e. Hint: A small invisible key can flip meanings.", 
+    answer: "KING" 
+  },
+  crypto300: { 
+    points: 300, 
+    question: "Vigenère Cipher. [MEDIUM] Ciphertext: WERBMV. Hint: The thing that opens a door also opens this puzzle.", 
+    answer: "MATRIX" 
+  },
+  crypto350: { 
+    points: 350, 
+    question: "Ulta. [MEDIUM] Ciphertext: S1003D3IOW. Hint: The true message lies beyond Cerberus's three heads. But first, the message must be unwoven from the two threads of fate. Know that the vowels were marked by single fingers, and the journey itself must be reversed to reach the start.", 
+    answer: "HELLOWORLD" 
+  },
+  crypto400: { 
+    points: 400, 
+    question: "Masked Vigenère (Key: PIRATE). [HARD] Ciphertext: IZVALYGM. Hint: To reveal the motherlode, you must decrypt using the signature of the one who said, 'Why fight when you can negotiate?'.", 
+    answer: "TREASURE" 
+  },
+  crypto450: { 
+    points: 450, 
+    question: "Multi-step Number-encoded Letters. [HARD] Numbers: 8, 20, 18, 18, 26, 19, 14, 25, 30. Hint: The true date is scrambled by an erroneous five-year jump and a complete inversion of the timeline.", 
+    answer: "COMMUNITY" 
+  },
+  crypto500: { 
+    points: 500, 
+    question: "Repeating Mask Cipher (Reverse XOR). [HARD] Ciphertext (Hex): 00 1D 05 06 08 0A 16. Hint: The message is veiled by a repeating four-character blueprint of a system-breaking action. To reveal the one who shatters security, you must use the mask where A ⊕ A = 0 to expose the truth.", 
+    answer: "CRACKER" 
+  },
 
   // OSINT
   osint100: { points: 100, question: "What does OSINT stand for?", answer: "open source intelligence" },
