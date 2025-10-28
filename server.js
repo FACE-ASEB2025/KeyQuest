@@ -114,11 +114,35 @@ const allQuestions = {
   },
 
   // OSINT
-  osint100: { points: 100, question: "What does OSINT stand for?", answer: "open source intelligence" },
-  osint200: { points: 200, question: "Common website for exposed device info?", answer: "shodan" },
-  osint300: { points: 300, question: "What is 'dorking' in OSINT?", answer: "using advanced search operators" },
-  osint400: { points: 400, question: "Tool for historical website versions?", answer: "wayback machine" },
-  osint500: { points: 500, question: "Finding location from photo metadata is called?", answer: "exif analysis" },
+  osint100: { 
+    points: 100, 
+    question: "Bob wants to find out how many data breaches his email address has been associated with as of 28/10/2025. Email: BOB@gmail.com Find a suitable website to look up the number of breaches and find out the total number of breaches.",
+    answer: "390" 
+  },
+
+  osint200: { 
+    points: 200, 
+    question: "While monitoring network traffic, Bob finds a suspicious domain: gogogle.com Perform a domain lookup and find the registrar name (omit “Inc” while answering).", 
+    answer: "MarkMonitor"
+  },
+
+  osint300: { 
+    points: 300, 
+    question: "Bob is trying to locate a missing journalist.He finds the journalist’s last post on social media.In which country is Bob most likely to find the journalist?",
+    image: "OSINT/LocationPic.png", 
+    answer: "Iceland" 
+  },
+
+  osint400: { points: 400, 
+    question: "One of Bob’s colleagues has hidden a secret message on the website asebface.in, and it is crucial for your next step.Decode the message and give the last word of that hidden message.", 
+    answer: "BOB" 
+  },
+
+  osint500: { 
+    points: 500, 
+    question: "As part of Bob’s onboarding, the agency sends an email with an jpg attachemnt and no location information. Bob realizes the true coordinates are hidden inside the image itself. Extract the latitude, longitude   from the image, then add them together.(upto 3 decimals)",
+    image: "OSINT/Location.jpg", 
+    answer: "116.734" },
 };
 
 // --- 4. TOKEN VERIFICATION MIDDLEWARE ---
